@@ -46,9 +46,9 @@ public class HomeActivity extends AppCompatActivity {
 
         ActionBean[] locActionBeans = {
                 new ActionBean("通知",this,NotificationSenderActivity.class),
-                new ActionBean("高斯模糊", this ,BlurActivity.class),
+                /*new ActionBean("高斯模糊", this ,BlurActivity.class),
                 new ActionBean("状态栏颜色",this,FullScreenActivity.class),
-                new ActionBean("Clip Demo", this,ClipActivity.class),
+                new ActionBean("Clip Demo", this,ClipActivity.class),*/
                 new ActionBean("GhostEyes", this,GhostEyesActivity.class)
         };
 

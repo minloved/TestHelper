@@ -15,7 +15,6 @@ import android.util.Log;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewOutlineProvider;
@@ -45,7 +44,7 @@ public class GhostEyesHelper {
     private static final String IMG_DIR = getSDCardPath() + File.separatorChar + "sunmi" + File.separatorChar;
 
     static {
-        Log.e("SUNMI","PATH: " + IMG_DIR);
+        Log.e("SUNMI","Compare Dir: " + IMG_DIR);
     }
 
     final Context mContext;
@@ -55,16 +54,19 @@ public class GhostEyesHelper {
     View start;
     View pre;
     View next;
-    ImageView mAlphaView;
+    ImageView mForePicture;
     View mBGView;
 
     View mGhostView;
+
+    boolean isInScanState = false;
+    boolean isStartedState = false;
 
     private final static int INVALID_INDEX = -1;
 
     private  final List<String> mPathList = new ArrayList<>();
     private int mPathIndex = INVALID_INDEX;
-    private int mNextIndex = INVALID_INDEX;
+    private int mNextPathIndex = INVALID_INDEX;
 
     private Handler mHandler = new Handler(Looper.getMainLooper());
 
@@ -110,8 +112,8 @@ public class GhostEyesHelper {
         pre = pGroup.findViewById(R.id.pre);
         next = pGroup.findViewById(R.id.next);
 
-        pre.setEnabled(false);
-        next.setEnabled(false);
+        pre.setVisibility(View.INVISIBLE);
+        next.setVisibility(View.INVISIBLE);
     }
 
     public void installGhost(final Context appContext){
@@ -120,7 +122,7 @@ public class GhostEyesHelper {
             return;
         }
         View ghost = LayoutInflater.from(appContext).inflate(R.layout.ghost_float,null);
-        final WindowManager.LayoutParams mLp = new WindowManager.LayoutParams(
+        final WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.TYPE_SYSTEM_ERROR,
@@ -128,14 +130,14 @@ public class GhostEyesHelper {
                         | WindowManager.LayoutParams.FLAG_TOUCHABLE_WHEN_WAKING
                         | WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS,
                 PixelFormat.TRANSLUCENT);
-        mLp.flags |= WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED;
-        mLp.gravity = Gravity.TOP | Gravity.RIGHT;
+        lp.flags |= WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED;
+        lp.gravity = Gravity.TOP | Gravity.RIGHT;
 
-        mLp.softInputMode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE;
-        mLp.setTitle("installGhost");
-        mLp.packageName = appContext.getPackageName();
-        ghost.setLayoutParams(mLp);
-        mWindowManager.addView(ghost, mLp);
+        lp.softInputMode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE;
+        lp.setTitle("installGhost");
+        lp.packageName = appContext.getPackageName();
+        ghost.setLayoutParams(lp);
+        mWindowManager.addView(ghost, lp);
 
         mGhostView = ghost;
 
@@ -166,7 +168,7 @@ public class GhostEyesHelper {
             lp.packageName = appContext.getPackageName();
 
             mWindowManager.addView(bg, lp);
-            mAlphaView = (ImageView) bg.findViewById(R.id.alpha);
+            mForePicture = (ImageView) bg.findViewById(R.id.alpha);
 
             mBGView = bg;
         }
@@ -178,13 +180,34 @@ public class GhostEyesHelper {
     private void uninstallBG(){
         if (mBGView != null){
             mWindowManager.removeView(mBGView);
-            mAlphaView.setImageBitmap(null);
+            mForePicture.setImageBitmap(null);
             mBGView = null;
+        }
+
+        pre.setVisibility(View.INVISIBLE);
+        next.setVisibility(View.INVISIBLE);
+    }
+
+    private void scanAllFiles(File file){
+        if (!file.exists())return;
+
+        if (!file.isDirectory()) {
+            if (isImage(file.getName())){
+                mPathList.add(file.getAbsolutePath());
+            }
+            return;
+        }
+
+        File[] list = file.listFiles();
+        if (list != null){
+            for (File f : list){
+                scanAllFiles(f);
+            }
         }
     }
 
     private void scanFile(){
-
+        isInScanState = true;
         Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
         Uri uri = Uri.fromFile(new File(IMG_DIR));
         intent.setData(uri);
@@ -194,31 +217,23 @@ public class GhostEyesHelper {
 
         mPathList.clear();
         mPathIndex = INVALID_INDEX;
-        mNextIndex = INVALID_INDEX;
+        mNextPathIndex = INVALID_INDEX;
 
         mHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                scan.setSelected(false);
+
 
                 mPathList.clear();
-                File file = new File(IMG_DIR);
-                if (file.exists() && file.isDirectory()){
-                    File[] list = file.listFiles();
-                    if (list != null){
-                        for (File f : list){
-                            if (f.isDirectory())continue;
-                            mPathList.add(f.getAbsolutePath());
-                        }
-                    }
-                }
+                scanAllFiles( new File(IMG_DIR));
+
                 mPathIndex = INVALID_INDEX;
-                mNextIndex = INVALID_INDEX;
+                mNextPathIndex = INVALID_INDEX;
 
                 Toast.makeText(mContext,"********** 扫描结束********* ",Toast.LENGTH_LONG).show();
-
+                isInScanState = false;
             }
-        },2000);
+        },3000);
 
         Toast.makeText(mContext,"开始扫描",Toast.LENGTH_SHORT).show();
     }
@@ -227,32 +242,41 @@ public class GhostEyesHelper {
         int c = mPathList.size();
 
         if (mPathIndex >= c-1 ){
-            next.setEnabled(false);
+            next.setVisibility(View.INVISIBLE);
         }else{
-            next.setEnabled(true);
+            next.setVisibility(View.VISIBLE);
         }
 
         if (mPathIndex <= 0){
-            pre.setEnabled(false);
+            pre.setVisibility(View.INVISIBLE);
         }else{
-            pre.setEnabled(true);
+            pre.setVisibility(View.VISIBLE);
         }
     }
 
-    private void updateForegroundPic(){
+    private void updateForePic(){
 
         int c = mPathList.size();
-        if (mNextIndex >= c || mNextIndex <0 ){
-            mNextIndex = INVALID_INDEX;
+        if (mNextPathIndex >= c || mNextPathIndex <0 ){
+            mNextPathIndex = INVALID_INDEX;
         }
-        if (mNextIndex == INVALID_INDEX){
+        if (mNextPathIndex == INVALID_INDEX){
             return;
         }
-        String filePath = mPathList.get(mNextIndex);
-        mPathIndex = mNextIndex;
+        String filePath = mPathList.get(mNextPathIndex);
+        mPathIndex = mNextPathIndex;
 
-        Bitmap bm = setAlpha(BitmapFactory.decodeFile(filePath),66);
-        mAlphaView.setImageBitmap(bm);
+        Bitmap bmp = null;
+        try {
+            bmp = BitmapFactory.decodeFile(filePath);
+        }catch (Throwable throwable){
+            Log.e("SUNMI","decodeFile error " + " filePath=" + filePath);
+        }
+
+        if (bmp != null){
+            Bitmap alphaBitmap = setAlpha(bmp,66);
+            mForePicture.setImageBitmap(alphaBitmap);
+        }
     }
 
 
@@ -261,39 +285,59 @@ public class GhostEyesHelper {
         @Override
         public void onClick(View view) {
 
-            if (scan.isSelected()){
-                Toast.makeText(mContext,"正在扫描指定目录",Toast.LENGTH_LONG).show();
+            if (isInScanState){
+                Toast.makeText(mContext,"正在扫描...",Toast.LENGTH_LONG).show();
                 return;
             }
             switch (view.getId()){
 
                 case R.id.scan:
-                    scan.setSelected(true);
-                    ((ImageView) start).setImageResource(R.mipmap.start);
+                    if (isStartedState){
+                        isStartedState = false;
+                        ((ImageView) start).setImageResource(R.mipmap.start);
+                    }
                     scanFile();
-                    break;
+                    return;
                 case R.id.start:
                     ImageView ig = (ImageView) view;
-                    if (mBGView != null){
+
+                    if (isStartedState){
+                        isStartedState = false;
                         ig.setImageResource(R.mipmap.start);
                         uninstallBG();
                         return;
                     }
+                    if (mPathList.isEmpty()){
+                        Toast.makeText(mContext,"没有资源,可以先扫描",Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    isStartedState = true;
                     ig.setImageResource(R.mipmap.stop);
+
                     installBG(mContext);
-                    if (mNextIndex == INVALID_INDEX){
-                        mNextIndex = 0;
+
+                    if (mNextPathIndex == INVALID_INDEX){
+                        mNextPathIndex = 0;
                     }
                     break;
                 case R.id.pre:
-                    mNextIndex--;
+                    if (!isStartedState){
+                        Toast.makeText(mContext,"没有开始",Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    mNextPathIndex = mPathIndex -1;
                     break;
                 case R.id.next:
-                    mNextIndex++;
+                    if (!isStartedState){
+                        Toast.makeText(mContext,"没有开始",Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    mNextPathIndex = mPathIndex + 1;
                     break;
             }
 
-            updateForegroundPic();
+            updateForePic();
             updateViewState();
         }
     }
@@ -313,6 +357,27 @@ public class GhostEyesHelper {
         sourceImg = Bitmap.createBitmap(argb, sourceImg.getWidth(), sourceImg.getHeight(), Bitmap.Config.ARGB_8888);
 
         return sourceImg;
+    }
+
+    public static boolean isImage(String filePath) {
+
+        int typeIndex = filePath.lastIndexOf(".");
+
+        if (typeIndex <= 0 || typeIndex ==filePath.length() -1){
+            return false;
+        }
+
+        String type = filePath.substring(typeIndex + 1)
+                .toLowerCase();
+
+        if (type != null
+                && (type.equals("jpg") || type.equals("gif")
+                || type.equals("png") || type.equals("jpeg")
+                || type.equals("bmp") || type.equals("wbmp")
+                || type.equals("ico") || type.equals("jpe"))) {
+            return true;
+        }
+        return false;
     }
 
 }
