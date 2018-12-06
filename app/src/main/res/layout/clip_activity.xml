@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:background="#FFFFFF"
+    tools:context="com.demo.HomeActivity">
+
+        <include layout="@layout/app_compat_tool_bar_layout"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:background="#0FFFCE"
+            android:layout_gravity="center_horizontal"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="600dp"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:layout_weight="1">
+
+                        <SeekBar
+                            android:id="@+id/pc"
+                            android:layout_width="300dp"
+                            android:layout_height="50dp"
+                            android:progress="0"
+                            android:background="#00FF00"
+                            android:max="100" />
+
+                        <TextView
+                            android:textColor="#FFFFFF"
+                            android:id="@+id/pc_tip"
+                            android:gravity="center_vertical"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:textSize="20dp"
+                            android:text="Parent TopClipProgress : 0"/>
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="2dp"
+                    android:background="#000000"/>
+
+                <LinearLayout
+                    android:layout_width="600dp"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:layout_weight="1">
+
+                        <SeekBar
+                            android:id="@+id/cc"
+                            android:layout_width="300dp"
+                            android:layout_height="50dp"
+                            android:progress="0"
+                            android:background="#00FF00"
+                            android:max="100" />
+
+                        <TextView
+                            android:textColor="#FFFFFF"
+                            android:id="@+id/cc_tip"
+                            android:gravity="center_vertical"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:textSize="20dp"
+                            android:text="Child TopClipProgress : 0"/>
+
+                </LinearLayout>
+
+
+        </LinearLayout>
+
+        <FrameLayout
+            android:id="@+id/parent"
+            android:layout_width="367.3dp"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:background="#88FF0000">
+
+                <TextView
+                    android:id="@+id/child"
+                    android:text="ChildView______Clip"
+                    android:layout_width="match_parent"
+                    android:layout_height="140dp"
+                    android:textColor="#FFFFFF"
+                    android:layout_gravity="center"
+                    android:textSize="24dp"
+                    android:gravity="center"
+                    android:layout_weight="1"
+                    android:background="#8800FF00"/>
+
+                <View
+                    android:layout_gravity="center"
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#000000"/>
+
+        </FrameLayout>
+
+</LinearLayout>

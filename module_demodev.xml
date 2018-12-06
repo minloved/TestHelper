@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_demodev" default="compile.module.demodev">
+  <dirname property="module.demodev.basedir" file="${ant.file.module_demodev}"/>
+  
+  <property name="module.jdk.home.demodev" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.demodev" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.demodev" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.demodev" value="-encoding UTF-8 -source 1.7 -target 1.7 ${compiler.args}"/>
+  
+  <property name="demodev.output.dir" value="${module.demodev.basedir}/build/classes/production/DemoDev"/>
+  <property name="demodev.testoutput.dir" value="${module.demodev.basedir}/build/classes/test/DemoDev"/>
+  
+  <path id="demodev.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="demodev.module.production.classpath">
+    <path refid="${module.jdk.classpath.demodev}"/>
+  </path>
+  
+  <path id="demodev.runtime.production.module.classpath">
+    <pathelement location="${demodev.output.dir}"/>
+  </path>
+  
+  <path id="demodev.module.classpath">
+    <path refid="${module.jdk.classpath.demodev}"/>
+    <pathelement location="${demodev.output.dir}"/>
+  </path>
+  
+  <path id="demodev.runtime.module.classpath">
+    <pathelement location="${demodev.testoutput.dir}"/>
+    <pathelement location="${demodev.output.dir}"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.demodev">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.demodev">
+    <patternset refid="excluded.from.module.demodev"/>
+  </patternset>
+  
+  
+  <target name="compile.module.demodev" depends="compile.module.demodev.production,compile.module.demodev.tests" description="Compile module DemoDev"/>
+  
+  <target name="compile.module.demodev.production" depends="register.custom.compilers" description="Compile module DemoDev; production classes"/>
+  
+  <target name="compile.module.demodev.tests" depends="register.custom.compilers,compile.module.demodev.production" description="compile module DemoDev; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.demodev" description="cleanup module">
+    <delete dir="${demodev.output.dir}"/>
+    <delete dir="${demodev.testoutput.dir}"/>
+  </target>
+</project>

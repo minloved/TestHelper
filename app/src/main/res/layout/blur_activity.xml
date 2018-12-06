@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    android:orientation="vertical"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center_horizontal"
+    tools:context=".blur.BlurActivity">
+
+    <include layout="@layout/app_compat_tool_bar_layout"/>
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:scaleType="fitXY"
+        android:layout_height="360dp"
+        android:layout_width="640dp"/>
+
+    <SeekBar
+        android:layout_marginTop="20dp"
+        android:id="@+id/seekBar"
+        android:layout_width="640dp"
+        android:background="#0FA0FC"
+        android:layout_height="wrap_content" />
+</LinearLayout>
